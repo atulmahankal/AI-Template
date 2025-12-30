@@ -459,7 +459,7 @@ Create `services/frontend/` with:
 
 - **Vite Configuration**:
 
-  - Set `all` to `server.allowedHosts` in `vite.config.js` for local network IP access
+  - Set `true` to `server.allowedHosts` in `vite.config.js` for local network IP access
 
 - **PM2 Configuration**:
   - Create `ecosystem.config.js` for pm2 deployment

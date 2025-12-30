@@ -18,6 +18,7 @@ jobs:
   # Dependency Vulnerability Scanning
   # ============================================
   dependency-audit:
+    if: false # Temporarily disabled - set to true to enable
     name: Dependency Audit
     runs-on: ubuntu-latest
     steps:
@@ -55,6 +56,7 @@ jobs:
   # CodeQL Analysis
   # ============================================
   codeql:
+    if: false # Temporarily disabled - set to true to enable
     name: CodeQL Analysis
     runs-on: ubuntu-latest
     strategy:
@@ -82,6 +84,7 @@ jobs:
   # Secret Scanning
   # ============================================
   secrets-scan:
+    if: false # Temporarily disabled - set to true to enable
     name: Secret Scanning
     runs-on: ubuntu-latest
     steps:
@@ -103,6 +106,7 @@ jobs:
   # Container Scanning
   # ============================================
   container-scan:
+    if: false # Temporarily disabled - set to true to enable
     name: Container Vulnerability Scan
     runs-on: ubuntu-latest
     steps:
@@ -148,6 +152,7 @@ jobs:
   # SAST (Static Application Security Testing)
   # ============================================
   sast:
+    if: false # Temporarily disabled - set to true to enable
     name: SAST Scan
     runs-on: ubuntu-latest
     steps:
@@ -169,6 +174,7 @@ jobs:
   # License Compliance
   # ============================================
   license-check:
+    if: false # Temporarily disabled - set to true to enable
     name: License Compliance
     runs-on: ubuntu-latest
     steps:

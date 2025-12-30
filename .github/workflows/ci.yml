@@ -16,6 +16,7 @@ jobs:
   # Frontend Jobs
   # ============================================
   frontend-lint:
+    if: false # Temporarily disabled - set to true to enable
     name: Frontend Lint
     runs-on: ubuntu-latest
     defaults:
@@ -49,6 +50,7 @@ jobs:
         run: pnpm typecheck
 
   frontend-test:
+    if: false # Temporarily disabled - set to true to enable
     name: Frontend Test
     runs-on: ubuntu-latest
     needs: frontend-lint
@@ -84,6 +86,7 @@ jobs:
           fail_ci_if_error: false
 
   frontend-build:
+    if: false # Temporarily disabled - set to true to enable
     name: Frontend Build
     runs-on: ubuntu-latest
     needs: frontend-test
@@ -122,6 +125,7 @@ jobs:
   # Backend Jobs
   # ============================================
   backend-lint:
+    if: false # Temporarily disabled - set to true to enable
     name: Backend Lint
     runs-on: ubuntu-latest
     defaults:
@@ -151,6 +155,7 @@ jobs:
         run: uv run mypy app
 
   backend-test:
+    if: false # Temporarily disabled - set to true to enable
     name: Backend Test
     runs-on: ubuntu-latest
     needs: backend-lint
@@ -201,6 +206,7 @@ jobs:
   # E2E Tests
   # ============================================
   e2e-test:
+    if: false # Temporarily disabled - set to true to enable
     name: E2E Tests
     runs-on: ubuntu-latest
     needs: [frontend-build, backend-test]
@@ -248,6 +254,7 @@ jobs:
   # Docker Build
   # ============================================
   docker-build:
+    if: false # Temporarily disabled - set to true to enable
     name: Docker Build
     runs-on: ubuntu-latest
     needs: [frontend-test, backend-test]

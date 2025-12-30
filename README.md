@@ -254,6 +254,28 @@ The AI will start **Phase 1: Planning** and create all documentation before impl
 | **CI** | Push/PR | Lint, test, build frontend & backend |
 | **Security** | Push/PR/Weekly | CodeQL, secret scanning, dependency audit, container scan |
 
+> **Note**: Workflows are currently **disabled** (template state). See [Re-enabling Workflows](#re-enabling-workflows) to activate them.
+
+### Re-enabling Workflows
+
+The CI and Security workflows are disabled by default in the template. To enable them after your project is set up:
+
+1. Open `.github/workflows/ci.yml` and `.github/workflows/security.yml`
+2. Change `if: false` to `if: true` for each job you want to enable
+3. Commit and push the changes
+
+```yaml
+# Disabled
+frontend-lint:
+  if: false # Temporarily disabled - set to true to enable
+  name: Frontend Lint
+
+# Enabled
+frontend-lint:
+  if: true # Temporarily disabled - set to true to enable
+  name: Frontend Lint
+```
+
 ### Code Quality Tools
 
 | Tool | Purpose | Config File |
