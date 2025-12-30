@@ -13,6 +13,7 @@ This template supports **multiple AI agents working simultaneously**. Follow the
 ### Agent Identification
 
 Each agent MUST identify itself using the `AGENT_NAME` from its config file:
+
 - Claude → `claude`
 - Gemini → `gemini`
 - Copilot → `copilot`
@@ -47,9 +48,11 @@ When starting a task, update `TODO.md` with your claim:
 
 ```markdown
 # Before (unclaimed)
+
 - [ ] Create FastAPI structure
 
 # After (claimed by claude)
+
 - [ ] Create FastAPI structure `@claude` `#20241229-143022`
 ```
 
@@ -65,10 +68,12 @@ When done or stopping:
 
 ```markdown
 # Completed
+
 - [x] Create FastAPI structure ~~@claude~~ ~~#20241229-143022~~
 
 # Released (if stopping without completing)
-- [ ] Create FastAPI structure  <!-- Released by claude -->
+
+- [ ] Create FastAPI structure <!-- Released by claude -->
 ```
 
 ---
@@ -93,14 +98,17 @@ When done or stopping:
 ### Conflict Prevention Rules
 
 1. **Never claim a task already claimed by another agent**
+
    - Check for `@{agent}` tag before claiming
    - If tagged, skip to next available task
 
 2. **Never edit files another agent is working on**
+
    - Check `CURRENT_TASK.md` for active sessions
    - See which files each agent is modifying
 
 3. **Use git as sync point**
+
    - Before starting: `git pull`
    - After completing task: commit and push (or notify user)
 
@@ -228,11 +236,13 @@ Choose (1/2):
 #### Case D: General Prompt (continue/hello/proceed)
 
 **If project NOT initialized:**
+
 ```
 Project not yet initialized. Please describe your project idea.
 ```
 
 **If project EXISTS:**
+
 ```
 Project: "[Project Name]"
 
@@ -266,13 +276,13 @@ Continuing from last session...
 
 Update these files based on requirements:
 
-| File | Content |
-|------|---------|
-| `Implementation/PROJECT_CONTEXT.md` | Project name, description, goals, tech stack |
-| `Implementation/ARCHITECTURE.md` | System architecture, directory structure, diagrams |
-| `Implementation/DECISIONS.md` | Design decisions with rationale |
-| `Implementation/PROJECT_MANAGEMENT.md` | Milestones, phases, timeline |
-| `Implementation/TODO.md` | Detailed task list organized by phases |
+| File                                   | Content                                            |
+| -------------------------------------- | -------------------------------------------------- |
+| `Implementation/PROJECT_CONTEXT.md`    | Project name, description, goals, tech stack       |
+| `Implementation/ARCHITECTURE.md`       | System architecture, directory structure, diagrams |
+| `Implementation/DECISIONS.md`          | Design decisions with rationale                    |
+| `Implementation/PROJECT_MANAGEMENT.md` | Milestones, phases, timeline                       |
+| `Implementation/TODO.md`               | Detailed task list organized by phases             |
 
 #### 1.3 Update README.md
 
@@ -291,34 +301,43 @@ Replace template README with project-specific documentation:
 ## Tech Stack
 
 ### Frontend
+
 - [Technologies]
 
 ### Backend
+
 - [Technologies]
 
 ## Quick Start
 
 ### Prerequisites
+
 [Required tools]
 
 ### Installation
+
 [Setup steps]
 
 ## Development
 
 ### Running Locally
+
 [Commands]
 
 ### Running Tests
+
 [Test commands]
 
 ## Project Structure
+
 [Directory layout]
 
 ## License
+
 [License type]
 
 ---
+
 _Built with [DevAI](https://github.com/atulmahankal/AI-Template)_
 ```
 
@@ -362,6 +381,7 @@ git commit -m "feat: Phase 1 - Project planning and documentation"
 Create `services/backend/` with:
 
 - **App Structure**:
+
   ```
   services/backend/
   ├── app/
@@ -383,9 +403,11 @@ Create `services/backend/` with:
   ```
 
 - **Required Endpoints**:
+
   - `GET /health` - Returns `{"status": "healthy", "app": "[AppName]", "version": "1.0.0"}`
 
 - **Error Handling**:
+
   - Global exception handler
   - Custom exception classes
   - Consistent error response format
@@ -400,6 +422,7 @@ Create `services/backend/` with:
 Create `services/frontend/` with:
 
 - **App Structure**:
+
   ```
   services/frontend/
   ├── src/
@@ -420,16 +443,27 @@ Create `services/frontend/` with:
   ```
 
 - **Required Pages**:
+
   - Landing page with project branding
 
 - **Error Handling**:
+
   - React Error Boundary
   - Global error handler
   - Toast notifications for user feedback
 
 - **Logging**:
+
   - Console logging (dev)
   - Log to file for SSR apps
+
+- **Vite Configuration**:
+
+  - Set `all` to `server.allowedHosts` in `vite.config.js` for local network IP access
+
+- **PM2 Configuration**:
+  - Create `ecosystem.config.js` for pm2 deployment
+  - Configure for production builds
 
 #### 2.3 Environment Configuration
 
@@ -449,6 +483,7 @@ Create `.env` files at three levels:
 ```
 
 **Root `.env.example`** (for Docker):
+
 ```env
 # Docker Compose Environment
 COMPOSE_PROJECT_NAME=appname
@@ -464,6 +499,7 @@ FRONTEND_URL=http://frontend:3000
 ```
 
 **Docker injects environment variables** into services via `compose.yml`:
+
 ```yaml
 services:
   backend:
@@ -483,7 +519,17 @@ services:
 - Docker reads root `.env` and injects into services
 - Verify both services start correctly
 
-#### 2.5 Commit Phase 2
+#### 2.5 Production Deployment Documentation
+
+Create `./docs/ProductionDeployment.md` with:
+
+- **Prerequisites**: Required tools, dependencies, system requirements
+- **Quick Deploy**: One-command deployment steps
+- **Manual Deployment**: Step-by-step manual deployment guide
+- **Environment Setup**: Production environment variables
+- **PM2 Commands**: Process management commands
+
+#### 2.6 Commit Phase 2
 
 ```bash
 git add .
@@ -576,33 +622,33 @@ Implement features as defined in `Implementation/TODO.md`:
 
 ## Workflow Commands
 
-| Command | Action |
-|---------|--------|
-| `continue` | Continue from last session (Case D) |
-| `proceed` | Same as continue |
-| `status` | Show current project status including active agents |
+| Command    | Action                                              |
+| ---------- | --------------------------------------------------- |
+| `continue` | Continue from last session (Case D)                 |
+| `proceed`  | Same as continue                                    |
+| `status`   | Show current project status including active agents |
 
 ---
 
 ## File Permissions
 
-| Path | Permission | Description |
-|------|------------|-------------|
-| `.ai/AI_INSTRUCTIONS.md` | read-only | Workflow rules (this file) |
-| `.ai/CODING_GUIDELINES.md` | read-only | Code style guidelines |
-| `.ai/TESTING_GUIDELINES.md` | read-only | Testing standards |
-| `.ai/OPERATIONAL_GUIDELINES.md` | read-only | DevOps procedures |
-| `.ai/memory/*.md` | session file | Create new per session (with agent name) |
-| `Implementation/TODO.md` | editable | Task list with agent claims |
-| `Implementation/CURRENT_TASK.md` | editable | Active sessions registry |
-| `Implementation/PROJECT_CONTEXT.md` | Phase 1 only | Read-only after planning |
-| `Implementation/ARCHITECTURE.md` | Phase 1 only | Read-only after planning |
-| `Implementation/DECISIONS.md` | Phase 1 only | Read-only after planning |
-| `Implementation/PROJECT_MANAGEMENT.md` | Phase 1 only | Read-only after planning |
-| `README.md` | editable | Update on feature completion |
-| `CHANGELOG.md` | editable | Update on phase completion |
-| `services/**` | editable | Application code (check claims first!) |
-| `logs/**` | auto-generated | Log files |
+| Path                                   | Permission     | Description                              |
+| -------------------------------------- | -------------- | ---------------------------------------- |
+| `.ai/AI_INSTRUCTIONS.md`               | read-only      | Workflow rules (this file)               |
+| `.ai/CODING_GUIDELINES.md`             | read-only      | Code style guidelines                    |
+| `.ai/TESTING_GUIDELINES.md`            | read-only      | Testing standards                        |
+| `.ai/OPERATIONAL_GUIDELINES.md`        | read-only      | DevOps procedures                        |
+| `.ai/memory/*.md`                      | session file   | Create new per session (with agent name) |
+| `Implementation/TODO.md`               | editable       | Task list with agent claims              |
+| `Implementation/CURRENT_TASK.md`       | editable       | Active sessions registry                 |
+| `Implementation/PROJECT_CONTEXT.md`    | Phase 1 only   | Read-only after planning                 |
+| `Implementation/ARCHITECTURE.md`       | Phase 1 only   | Read-only after planning                 |
+| `Implementation/DECISIONS.md`          | Phase 1 only   | Read-only after planning                 |
+| `Implementation/PROJECT_MANAGEMENT.md` | Phase 1 only   | Read-only after planning                 |
+| `README.md`                            | editable       | Update on feature completion             |
+| `CHANGELOG.md`                         | editable       | Update on phase completion               |
+| `services/**`                          | editable       | Application code (check claims first!)   |
+| `logs/**`                              | auto-generated | Log files                                |
 
 ---
 
@@ -665,9 +711,11 @@ Implement features as defined in `Implementation/TODO.md`:
 
 ```markdown
 # Session: YYYY-MM-DD HH:MM:SS
+
 Agent: {agent_name}
 
 ## Status
+
 - Phase: [current phase]
 - Task Claimed: [task with @tag]
 - Last Completed: [task]
@@ -675,26 +723,32 @@ Agent: {agent_name}
 - Next: [task]
 
 ## Active Session Info
+
 - Session ID: YYYYMMDD-HHMMSS
 - Files Being Modified:
   - services/backend/app/main.py
   - services/backend/app/core/logging.py
 
 ## Completed This Session
+
 - [x] Task 1 - notes
 - [x] Task 2 - notes
 
 ## In Progress
+
 - [ ] Current task - state, blockers
 
 ## Key Decisions
+
 - Decision: rationale
 
 ## Next Steps
+
 - Step 1
 - Step 2
 
 ## Handoff Notes
+
 <!-- Notes for next session or other agents -->
 ```
 
