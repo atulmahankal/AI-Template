@@ -284,6 +284,19 @@ Update these files based on requirements:
 | `Implementation/PROJECT_MANAGEMENT.md` | Milestones, phases, timeline                       |
 | `Implementation/TODO.md`               | Detailed task list organized by phases             |
 
+**ARCHITECTURE.md MUST include:**
+- Frontend: Next.js App Router, Turbopack (dev), PWA setup
+- Backend: FastAPI structure, logging setup, static files
+- Development tools and their configuration
+- Directory structure for both services
+
+**DECISIONS.md MUST include:**
+- Why Next.js with Turbopack for development
+- Why PWA with offline support
+- Logging strategy (single rotating file, format)
+- Authentication approach (superadmin, RBAC)
+- Any deviations from default tech stack
+
 #### 1.3 Update README.md
 
 Replace template README with project-specific documentation:
@@ -474,25 +487,38 @@ Create `services/backend/` with:
 
 #### 2.2 Frontend Base
 
-Create `services/frontend/` with:
+Create `services/frontend/` using Next.js:
 
-- **App Structure**:
+**Init Command:**
+```bash
+pnpm create next-app frontend --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
+```
+
+- **App Structure** (Next.js App Router):
 
   ```
   services/frontend/
   ├── src/
-  │   ├── main.tsx          # App entry
-  │   ├── App.tsx           # Root component
-  │   ├── pages/
-  │   │   └── Landing.tsx   # Landing page
+  │   ├── app/
+  │   │   ├── layout.tsx       # Root layout
+  │   │   ├── page.tsx         # Home/Landing page
+  │   │   ├── not-found.tsx    # 404 page
+  │   │   ├── error.tsx        # Error boundary
+  │   │   ├── offline/
+  │   │   │   └── page.tsx     # Offline fallback page
+  │   │   └── globals.css      # Global styles
   │   ├── components/
   │   │   └── ErrorBoundary.tsx
-  │   ├── utils/
-  │   │   └── logger.ts     # Frontend logging
-  │   └── styles/
-  ├── logs/                  # Frontend logs (if SSR)
-  ├── .env.example           # Environment template (committed)
-  ├── .env                   # Local environment (gitignored)
+  │   └── lib/
+  │       └── logger.ts        # Frontend logging
+  ├── public/
+  │   ├── manifest.json        # PWA manifest
+  │   ├── sw.js                # Service worker
+  │   ├── favicon.ico
+  │   └── icons/               # PWA icons
+  ├── .env.example             # Environment template (committed)
+  ├── .env.local               # Local environment (gitignored)
+  ├── next.config.ts           # Next.js config
   ├── package.json
   └── Dockerfile
   ```
@@ -517,9 +543,39 @@ Create `services/frontend/` with:
   - Console logging (dev)
   - Log to file for SSR apps
 
-- **Vite Configuration**:
+- **Next.js Configuration**:
 
-  - Set `true` to `server.allowedHosts` in `vite.config.js` for local network IP access
+  - Configure `next.config.ts` for production optimizations
+  - Enable image optimization
+  - Configure allowed hosts for local network access
+
+- **Development Mode (Turbopack)**:
+
+  Enable Turbopack for faster development with better debugging:
+
+  ```json
+  // package.json scripts
+  {
+    "scripts": {
+      "dev": "next dev --turbo",
+      "dev:debug": "NODE_OPTIONS='--inspect' next dev --turbo",
+      "build": "next build",
+      "start": "next start"
+    }
+  }
+  ```
+
+  **Turbopack Benefits:**
+  - Faster hot module replacement (HMR)
+  - Better error overlay with stack traces
+  - Improved debugging experience
+  - Real-time compilation feedback
+
+  **Error Overlay Features:**
+  - Shows compilation errors inline
+  - Displays runtime errors with component stack
+  - Click-to-open source file in editor
+  - Clear error messages with suggestions
 
 - **PM2 Configuration**:
 
@@ -533,7 +589,7 @@ Create `services/frontend/` with:
   ```
   public/
   ├── manifest.json          # PWA manifest
-  ├── sw.js                  # Service worker (or use vite-plugin-pwa)
+  ├── sw.js                  # Service worker (or use next-pwa)
   └── icons/
       ├── icon-192x192.png
       └── icon-512x512.png
@@ -572,7 +628,7 @@ Create `services/frontend/` with:
 
   **Service Worker Strategy:**
 
-  - Use `vite-plugin-pwa` for automatic SW generation
+  - Use `next-pwa` package for automatic SW generation
   - Cache static assets (JS, CSS, images)
   - Cache API responses where appropriate
   - Show offline page when network unavailable
@@ -818,22 +874,83 @@ Implement features as defined in `Implementation/TODO.md`:
 
 ## Logging Requirements
 
+### Log Entry Format (MANDATORY for both Frontend & Backend)
+
+```
+<timestamp> <LEVEL> : <message>
+```
+
+**Example:**
+```
+2024-12-30 14:30:22 DEBUG : Database connection established
+2024-12-30 14:30:23 INFO : User login successful for user_id=123
+2024-12-30 14:30:25 WARNING : Rate limit approaching for IP 192.168.1.1
+2024-12-30 14:30:30 ERROR : Failed to process payment: timeout
+```
+
 ### Backend (`./logs/`)
 
 ```python
-# Rotating logs
-# Format: YYYY-MM-DD_HH-MM-SS.log
-# Rotation: Daily or 10MB
-# Retention: 30 days
+# File: services/backend/app/core/logging.py
+
+# Rotating logs configuration
+LOG_DIR = "./logs/"
+LOG_FILE = "app.log"           # Single rotating log file
+MAX_SIZE = 10 * 1024 * 1024    # 10MB rotation
+BACKUP_COUNT = 30              # Keep 30 days of logs
 
 # Log format
-"%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+LOG_FORMAT = "%(asctime)s %(levelname)s : %(message)s"
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+# Log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+# Development: DEBUG
+# Production: INFO
 ```
 
-### Frontend
+**Backend Logging Setup:**
+- Use Python's `logging.handlers.RotatingFileHandler`
+- Create `./logs/` directory if not exists
+- Single `app.log` file with rotation
+- All log levels in same file with level prefix
 
-- Development: `console.log/warn/error`
-- Production: Error tracking service (optional)
+### Frontend (`./logs/`)
+
+```typescript
+// File: services/frontend/src/lib/logger.ts
+
+// Rotating logs configuration (for SSR/server-side)
+const LOG_DIR = "./logs/";
+const LOG_FILE = "app.log";    // Single rotating log file
+const MAX_SIZE = 10 * 1024 * 1024;  // 10MB rotation
+
+// Log format
+// <timestamp> <LEVEL> : <message>
+
+// Log levels: DEBUG, INFO, WARNING, ERROR
+```
+
+**Frontend Logging Setup:**
+- Development: Console logging with same format
+- Production (SSR): Write to `./logs/app.log` with rotation
+- Use libraries like `winston` or `pino` for file logging
+- All log levels in same file with level prefix
+
+**Example Logger Implementation:**
+```typescript
+const logger = {
+  debug: (msg: string) => log("DEBUG", msg),
+  info: (msg: string) => log("INFO", msg),
+  warning: (msg: string) => log("WARNING", msg),
+  error: (msg: string) => log("ERROR", msg),
+};
+
+function log(level: string, message: string) {
+  const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19);
+  const entry = `${timestamp} ${level} : ${message}`;
+  // Write to console (dev) or file (prod)
+}
+```
 
 ---
 

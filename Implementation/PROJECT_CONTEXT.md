@@ -9,13 +9,12 @@
 ## Tech Stack
 
 ### Frontend
-- **Framework**: React 18+ with TypeScript (SSR with SWC)
+- **Framework**: Next.js 15+ with TypeScript (App Router)
 - **Styling**: TailwindCSS v4 (latest)
-- **Build Tool**: Vite
-- **Init Command**: `pnpm create vite-extra frontend --template ssr-react-swc-streaming-ts`
+- **Init Command**: `pnpm create next-app frontend --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"`
 - **Package Manager**: pnpm (fast, disk-efficient)
 - **State Management**: Zustand / React Query
-- **Testing**: Vitest + React Testing Library + Playwright (E2E)
+- **Testing**: Jest + React Testing Library + Playwright (E2E)
 - **Writing Pad**: Canvas API / Fabric.js for handwriting support
 
 ### Backend
