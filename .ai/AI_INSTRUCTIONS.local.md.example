@@ -1,0 +1,81 @@
+# Local AI Instructions Override
+
+> This file overrides settings in `AI_INSTRUCTIONS.md` for local development.
+> **This file is gitignored** - use it for personal/machine-specific preferences.
+
+## How to Use
+
+Add sections below to override corresponding sections in `AI_INSTRUCTIONS.md`.
+The AI will use these values instead of the defaults.
+
+---
+
+## Deployment
+
+**Mode**: Local (No Docker)
+
+### Start Services
+
+```bash
+# Backend
+cd services/backend
+uv sync
+uv run uvicorn app.main:app --reload --port 8000
+
+# Frontend
+cd services/frontend
+pnpm install
+pnpm dev
+```
+
+### Database
+
+```bash
+# Local PostgreSQL
+psql -U postgres -c "CREATE DATABASE your_project_db;"
+
+# Or use SQLite for simple setup
+DATABASE_DIALECT=sqlite
+DATABASE_NAME=./dev.db
+```
+
+### Redis
+
+```bash
+# Local Redis
+redis-server
+```
+
+---
+
+## Package Manager Preferences
+
+<!-- Uncomment to override defaults -->
+<!--
+### Frontend
+- Use: npm (instead of pnpm)
+
+### Backend
+- Use: pip (instead of uv)
+-->
+
+---
+
+## Editor/IDE Settings
+
+<!-- Add your preferences -->
+<!--
+- Preferred editor: VSCode / Cursor / Neovim
+- Format on save: enabled
+- Tab size: 2
+-->
+
+---
+
+## Testing Preferences
+
+<!-- Uncomment to override -->
+<!--
+- Skip E2E tests in local dev
+- Use SQLite for test database
+-->

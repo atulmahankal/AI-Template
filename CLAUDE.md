@@ -1,40 +1,52 @@
 # Claude Code Instructions
 
-## Quick Start
-When user types `continue` or `proceed`:
-1. Read `.ai/AI_INSTRUCTIONS.md` for full workflow
-2. Check `.ai/TODO.md` for pending tasks
-3. Read `Implementation/CURRENT_TASK.md` for context
-4. Review latest `.ai/memory/*.md` for session continuity
-5. Resume work from last checkpoint
+## Session Start
 
-## Key Directories
-- `.ai/` - Project configuration (mostly read-only)
-- `.ai/memory/` - Session memory (editable)
-- `Implementation/` - Active work tracking
-- `Reference/` - Reference materials
-- `docs/` - Documentation
+AGENT_NAME = "claude"
 
-## Session Protocol
-1. Create memory file: `.ai/memory/YYYYMMDD_HHMMSS.md`
-2. Log progress incrementally
-3. Update TODO files on completion
-4. Summarize before session end
+**MANDATORY**: Read `.ai/AI_INSTRUCTIONS.md` and follow the Session Start Protocol.
 
-## Memory Format
-```markdown
-# Session: YYYY-MM-DD HH:MM
+## Quick Reference
 
-## Completed
-- Item 1
-- Item 2
+### Instructions Location
+- **Main**: `.ai/AI_INSTRUCTIONS.md` (workflow, phases, permissions)
+- **Local Override**: `.ai/AI_INSTRUCTIONS.local.md` (if exists)
+- **Code Standards**: `.ai/CODING_GUIDELINES.md`
+- **Testing**: `.ai/TESTING_GUIDELINES.md`
+- **Operations**: `.ai/OPERATIONAL_GUIDELINES.md`
 
-## In Progress
-- Current task details
+### Key Protocols
+1. Read `Implementation/CURRENT_TASK.md` to check active sessions
+2. Read `Implementation/TODO.md` to find unclaimed tasks
+3. Claim task with `@claude` `#YYYYMMDD-HHMMSS` tag
+4. Create memory file: `.ai/memory/YYYYMMDD_HHMMSS_claude.md`
+5. Register in `CURRENT_TASK.md` active sessions table
+6. Update memory before context exhaustion
 
-## Next Session
-- What to continue with
+## Multi-Agent Concurrency
 
-## Notes
-- Important observations
+When working with other agents:
+
+1. **Check First**: Read `CURRENT_TASK.md` before starting
+2. **Claim Tasks**: Add `@claude` tag to tasks you're working on
+3. **Avoid Conflicts**: Don't edit files another agent is modifying
+4. **Register Session**: Add yourself to active sessions table
+5. **Clean Up**: Remove your session entry when done
+
+### Memory File Naming
 ```
+.ai/memory/YYYYMMDD_HHMMSS_claude.md
+```
+
+### Task Claiming Format
+```markdown
+- [ ] Task name `@claude` `#20241229-143022`
+```
+
+## Claude-Specific Notes
+- Use TodoWrite tool for task tracking when available
+- Leverage Claude's long context for reading multiple files
+- Use parallel tool calls for efficiency
+- Create memory files proactively to preserve context
+
+All rules, protocols, and guidelines are centralized in `.ai/AI_INSTRUCTIONS.md`.

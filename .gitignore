@@ -1,9 +1,30 @@
-# AI Memory (optional - uncomment to ignore)
-# .ai/memory/
+# AI configurations
+.claude/
+
+# AI Local Overrides (machine-specific settings)
+.ai/*.local.md
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+services/**/.env
+services/**/.env.local
+*.secret
+**/secrets.*
+docs/API/.secrets.json
 
 # Common ignores
 node_modules/
-.env
-.env.local
 *.log
 .DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Build outputs
+dist/
+build/

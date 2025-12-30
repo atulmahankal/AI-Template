@@ -1,0 +1,25 @@
+# Aider Configuration
+# https://aider.chat/docs/config/aider_conf.html
+
+# Read AI instructions on startup
+read:
+  - .ai/AI_INSTRUCTIONS.md
+
+# Auto-commit settings (align with AI_INSTRUCTIONS.md protocol)
+auto-commits: false
+dirty-commits: false
+
+# Git settings
+git: true
+gitignore: true
+
+# Model preferences (can be overridden via CLI)
+# model: gpt-4
+# edit-format: diff
+
+# File handling
+encoding: utf-8
+
+# Lint and test commands (customize per project)
+# lint-cmd: pnpm lint
+# test-cmd: pnpm test

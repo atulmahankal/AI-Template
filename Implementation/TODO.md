@@ -1,24 +1,55 @@
 # Implementation Tasks
 
-## Phase 1: Setup
-- [ ] Initialize project structure
-- [ ] Configure development environment
-
-## Phase 2: Core Development
-- [ ]
-
-## Phase 3: Testing
-- [ ] Write unit tests
-- [ ] Write integration tests
-
-## Phase 4: Documentation
-- [ ] API documentation
-- [ ] User guide
-
-## Phase 5: Deployment
-- [ ] Prepare deployment
-- [ ] Deploy to staging
-- [ ] Deploy to production
+<!-- Tasks will be added after Phase 1: Planning -->
 
 ---
-*Managed by Developer & AI Agent*
+
+## Task Format Guide
+
+### Unclaimed Task
+```markdown
+- [ ] Task description
+```
+
+### Claimed Task (agent working on it)
+```markdown
+- [ ] Task description `@agent` `#YYYYMMDD-HHMMSS`
+```
+
+### Completed Task
+```markdown
+- [x] Task description ~~@agent~~ ~~#YYYYMMDD-HHMMSS~~
+```
+
+### Released Task (agent stopped without completing)
+```markdown
+- [ ] Task description  <!-- Released by agent -->
+```
+
+---
+
+## Example Structure (After Phase 1)
+
+```markdown
+## Phase 2: Base Application
+
+### Backend
+- [ ] Create FastAPI project structure `@claude` `#20241229-143022`
+- [ ] Add health endpoint
+- [ ] Setup rotating logs
+- [x] Configure error handling ~~@gemini~~ ~~#20241229-140000~~
+
+### Frontend
+- [ ] Create React project structure `@cursor` `#20241229-143200`
+- [ ] Add landing page
+- [ ] Setup error boundary
+- [ ] Configure logging
+
+### Docker
+- [ ] Create compose.yml
+- [ ] Create service Dockerfiles
+```
+
+---
+
+*Managed by Developer & AI Agents*

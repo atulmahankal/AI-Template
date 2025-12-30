@@ -1,8 +1,8 @@
-# Cursor Rules
+# Windsurf Rules
 
 ## Session Start
 
-AGENT_NAME = "cursor"
+AGENT_NAME = "windsurf"
 
 **MANDATORY**: Read `.ai/AI_INSTRUCTIONS.md` and follow the Session Start Protocol.
 
@@ -18,8 +18,8 @@ AGENT_NAME = "cursor"
 ### Key Protocols
 1. Read `Implementation/CURRENT_TASK.md` to check active sessions
 2. Read `Implementation/TODO.md` to find unclaimed tasks
-3. Claim task with `@cursor` `#YYYYMMDD-HHMMSS` tag
-4. Create memory file: `.ai/memory/YYYYMMDD_HHMMSS_cursor.md`
+3. Claim task with `@windsurf` `#YYYYMMDD-HHMMSS` tag
+4. Create memory file: `.ai/memory/YYYYMMDD_HHMMSS_windsurf.md`
 5. Register in `CURRENT_TASK.md` active sessions table
 6. Update memory before context exhaustion
 
@@ -28,26 +28,25 @@ AGENT_NAME = "cursor"
 When working with other agents:
 
 1. **Check First**: Read `CURRENT_TASK.md` before starting
-2. **Claim Tasks**: Add `@cursor` tag to tasks you're working on
+2. **Claim Tasks**: Add `@windsurf` tag to tasks you're working on
 3. **Avoid Conflicts**: Don't edit files another agent is modifying
 4. **Register Session**: Add yourself to active sessions table
 5. **Clean Up**: Remove your session entry when done
 
 ### Memory File Naming
 ```
-.ai/memory/YYYYMMDD_HHMMSS_cursor.md
+.ai/memory/YYYYMMDD_HHMMSS_windsurf.md
 ```
 
 ### Task Claiming Format
 ```markdown
-- [ ] Task name `@cursor` `#20241229-143022`
+- [ ] Task name `@windsurf` `#20241229-143022`
 ```
 
-## Cursor-Specific Notes
-- Use Cursor's codebase indexing for context-aware suggestions
-- Leverage Composer for multi-file edits
-- Use CMD+K for inline completions following project standards
-- Apply code standards from `.ai/CODING_GUIDELINES.md`
-- Use terminal integration for running project commands
+## Windsurf-Specific Notes
+- At session start, automatically read `.ai/AI_INSTRUCTIONS.md` and apply protocols
+- If conflicts with built-in Windsurf behavior, prioritize AI_INSTRUCTIONS.md
+- Use Cascade for complex multi-file operations
+- Leverage Windsurf's codebase understanding for context-aware suggestions
 
 All rules, protocols, and guidelines are centralized in `.ai/AI_INSTRUCTIONS.md`.

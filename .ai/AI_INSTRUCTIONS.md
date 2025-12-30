@@ -1,46 +1,760 @@
 # AI Agent Instructions
 
-## Primary Directive
-You are an AI development assistant working on this project. Follow these instructions carefully.
+> **Local Overrides**: If `.ai/AI_INSTRUCTIONS.local.md` exists, read it first.
+> Settings in the local file override this file (e.g., deployment mode, package managers).
+> **Note**: Do NOT read `.ai/AI_INSTRUCTIONS.local.md.example` - it's a template for users to copy and rename to `.ai/AI_INSTRUCTIONS.local.md`.
+
+---
+
+## Multi-Agent Concurrency System
+
+This template supports **multiple AI agents working simultaneously**. Follow these rules to avoid conflicts.
+
+### Agent Identification
+
+Each agent MUST identify itself using the `AGENT_NAME` from its config file:
+- Claude → `claude`
+- Gemini → `gemini`
+- Copilot → `copilot`
+- Cursor → `cursor`
+- Codex → `codex`
+- OpenCode → `opencode`
+- Windsurf → `windsurf`
+- Aider → `aider`
+
+### Memory File Naming (Per-Agent)
+
+Create memory files with agent identifier:
+
+```
+.ai/memory/YYYYMMDD_HHMMSS_{agent}.md
+
+Examples:
+.ai/memory/20241229_143022_claude.md
+.ai/memory/20241229_143105_gemini.md
+.ai/memory/20241229_143200_cursor.md
+```
+
+### Task Claiming Protocol
+
+#### Step 1: Check Active Sessions
+
+Before starting work, read `Implementation/CURRENT_TASK.md` to see active sessions.
+
+#### Step 2: Claim a Task
+
+When starting a task, update `TODO.md` with your claim:
+
+```markdown
+# Before (unclaimed)
+- [ ] Create FastAPI structure
+
+# After (claimed by claude)
+- [ ] Create FastAPI structure `@claude` `#20241229-143022`
+```
+
+Format: `@{agent}` `#{session-id}`
+
+#### Step 3: Register in CURRENT_TASK.md
+
+Add your session to the active sessions table in `CURRENT_TASK.md`.
+
+#### Step 4: Complete or Release
+
+When done or stopping:
+
+```markdown
+# Completed
+- [x] Create FastAPI structure ~~@claude~~ ~~#20241229-143022~~
+
+# Released (if stopping without completing)
+- [ ] Create FastAPI structure  <!-- Released by claude -->
+```
+
+---
+
+### ⚠️ Task Completion Rules (MANDATORY)
+
+**IMMEDIATELY after completing ANY task, you MUST:**
+
+1. **UPDATE TODO.md** - Change `- [ ]` to `- [x]` for the completed task
+2. **UPDATE your memory file** - Record what was done
+3. **UPDATE CURRENT_TASK.md** - Update your status or remove session if done
+
+```
+❌ WRONG: Complete task → Start next task
+✅ RIGHT: Complete task → Update TODO.md → Start next task
+```
+
+**DO NOT proceed to the next task until TODO.md is updated.**
+
+---
+
+### Conflict Prevention Rules
+
+1. **Never claim a task already claimed by another agent**
+   - Check for `@{agent}` tag before claiming
+   - If tagged, skip to next available task
+
+2. **Never edit files another agent is working on**
+   - Check `CURRENT_TASK.md` for active sessions
+   - See which files each agent is modifying
+
+3. **Use git as sync point**
+   - Before starting: `git pull`
+   - After completing task: commit and push (or notify user)
+
+4. **Communicate via CURRENT_TASK.md**
+   - All agents can read this file
+   - Update your row when status changes
+
+### Conflict Detection
+
+If you detect a conflict:
+
+```
+⚠️ CONFLICT DETECTED
+
+Task "[task name]" is already claimed by @{other-agent}
+Session: #{session-id}
+Started: [timestamp]
+
+Options:
+1) Work on a different unclaimed task
+2) Wait for @{other-agent} to complete
+3) Ask user to resolve
+
+Choose (1/2/3):
+```
+
+---
+
+## Session Start Protocol (MANDATORY)
+
+When a new session starts, follow this decision tree:
+
+### Step 1: Read Project State
+
+1. Read `Implementation/PROJECT_CONTEXT.md` to get **Project Name** (if exists)
+2. Read `Implementation/TODO.md` to check task state (any `- [ ]` entries?)
+3. Read `Implementation/CURRENT_TASK.md` to check **active sessions**
+
+### Step 2: Determine Response Based on Project State
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     USER'S FIRST PROMPT                         │
+│         "I want to create Online examination application"       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                   ┌──────────────────┐
+                   │ Read TODO.md &   │
+                   │ PROJECT_CONTEXT  │
+                   └──────────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+    ┌───────────┐       ┌───────────┐       ┌───────────┐
+    │  No Tasks │       │  Project  │       │  Project  │
+    │  (Empty)  │       │  Exists & │       │  Exists & │
+    │           │       │ Different │       │  Matches  │
+    └───────────┘       └───────────┘       └───────────┘
+          │                   │                   │
+          ▼                   ▼                   ▼
+       CASE A              CASE B              CASE C
+    Start Phase 1      Ask what to do     Offer options
+```
+
+---
+
+#### Case A: Project NOT Initialized (No tasks in TODO.md)
+
+Start **Phase 1: Planning** immediately.
+
+```
+Starting Phase 1: Planning for "[Project Idea]"
+
+I'll create project documentation first, then get your confirmation before implementation.
+```
+
+- Create memory file: `.ai/memory/YYYYMMDD_HHMMSS_{agent}.md`
+- Proceed to **Phase 1: Planning**
+
+---
+
+#### Case B: Project EXISTS but User Request is DIFFERENT Project
+
+```
+⚠️ Project exists with pending todos for a different application.
+
+Existing Project: "[Existing Project Name]"
+Pending Tasks: [count] tasks remaining
+
+You requested: "[User's different project idea]"
+
+What would you like to do?
+```
+
+- **Wait for user response** before proceeding
+- User may choose to continue existing or start fresh
+
+---
+
+#### Case C: Project EXISTS and User Request MATCHES (Additional Feature)
+
+```
+Project exists with pending todos.
+
+Project: "[Project Name]"
+Pending Tasks: [count]
+Last Completed: [task name]
+
+You requested: "[User's request - additional feature]"
+
+Options:
+1) Add to TODO and implement AFTER pending tasks
+2) Implement this FIRST, then proceed with pending tasks
+
+Choose (1/2):
+```
+
+- **Wait for user choice** before proceeding
+- Option 1: Add new feature to end of TODO.md, continue with pending
+- Option 2: Add new feature to top priority, implement first
+
+---
+
+#### Case D: General Prompt (continue/hello/proceed)
+
+**If project NOT initialized:**
+```
+Project not yet initialized. Please describe your project idea.
+```
+
+**If project EXISTS:**
+```
+Project: "[Project Name]"
+
+Status:
+- Phase: [current phase]
+- Pending Tasks: [count]
+- Next Available: [unclaimed task name]
+
+Continuing from last session...
+```
+
+- Claim next available task and proceed
+
+---
+
+## Development Phases
+
+### Phase 1: Planning (ALWAYS FIRST)
+
+**Objective**: Create complete project documentation before any code.
+
+⚠️ **Phase 1 should be done by ONE agent only** to avoid documentation conflicts.
+
+#### 1.1 Gather Requirements
+
+- Clarify project scope and goals
+- Define core features (MVP)
+- Confirm tech stack (or use defaults)
+
+#### 1.2 Create Documentation
+
+Update these files based on requirements:
+
+| File | Content |
+|------|---------|
+| `Implementation/PROJECT_CONTEXT.md` | Project name, description, goals, tech stack |
+| `Implementation/ARCHITECTURE.md` | System architecture, directory structure, diagrams |
+| `Implementation/DECISIONS.md` | Design decisions with rationale |
+| `Implementation/PROJECT_MANAGEMENT.md` | Milestones, phases, timeline |
+| `Implementation/TODO.md` | Detailed task list organized by phases |
+
+#### 1.3 Update README.md
+
+Replace template README with project-specific documentation:
+
+```markdown
+# [Project Name]
+
+[Brief description]
+
+## Features
+
+- Feature 1
+- Feature 2
+
+## Tech Stack
+
+### Frontend
+- [Technologies]
+
+### Backend
+- [Technologies]
+
+## Quick Start
+
+### Prerequisites
+[Required tools]
+
+### Installation
+[Setup steps]
+
+## Development
+
+### Running Locally
+[Commands]
+
+### Running Tests
+[Test commands]
+
+## Project Structure
+[Directory layout]
+
+## License
+[License type]
+
+---
+_Built with [DevAI](https://github.com/atulmahankal/AI-Template)_
+```
+
+#### 1.4 Review & Confirm
+
+```
+📋 Phase 1: Planning Complete
+
+Please review the following files:
+- README.md
+- Implementation/PROJECT_CONTEXT.md
+- Implementation/ARCHITECTURE.md
+- Implementation/DECISIONS.md
+- Implementation/PROJECT_MANAGEMENT.md
+- Implementation/TODO.md
+
+Confirm to commit and proceed to Phase 2? (yes/no)
+```
+
+#### 1.5 Commit Planning Phase
+
+After user confirmation:
+
+```bash
+git add .
+git commit -m "feat: Phase 1 - Project planning and documentation"
+```
+
+⚠️ After Phase 1 commit, `Implementation/PROJECT_CONTEXT.md`, `ARCHITECTURE.md`, `DECISIONS.md`, and `PROJECT_MANAGEMENT.md` become **READ-ONLY**.
+
+---
+
+### Phase 2: Base Application
+
+**Objective**: Create working foundation with error handling and logging.
+
+✅ **Phase 2 can use multiple agents** - one for backend, one for frontend.
+
+#### 2.1 Backend Base
+
+Create `services/backend/` with:
+
+- **App Structure**:
+  ```
+  services/backend/
+  ├── app/
+  │   ├── main.py           # FastAPI app entry
+  │   ├── api/
+  │   │   └── v1/
+  │   │       └── health.py # Health & version endpoint
+  │   ├── core/
+  │   │   ├── config.py     # App configuration (reads from .env)
+  │   │   ├── logging.py    # Rotating log setup
+  │   │   └── exceptions.py # Custom exceptions
+  │   └── schemas/
+  │       └── response.py   # Response models
+  ├── logs/                  # Auto-generated logs
+  ├── .env.example           # Environment template (committed)
+  ├── .env                   # Local environment (gitignored)
+  ├── pyproject.toml
+  └── Dockerfile
+  ```
+
+- **Required Endpoints**:
+  - `GET /health` - Returns `{"status": "healthy", "app": "[AppName]", "version": "1.0.0"}`
+
+- **Error Handling**:
+  - Global exception handler
+  - Custom exception classes
+  - Consistent error response format
+
+- **Logging**:
+  - Rotating file logs in `./logs/`
+  - Format: `YYYY-MM-DD_HH-MM-SS.log`
+  - Log levels: DEBUG (dev), INFO (prod)
+
+#### 2.2 Frontend Base
+
+Create `services/frontend/` with:
+
+- **App Structure**:
+  ```
+  services/frontend/
+  ├── src/
+  │   ├── main.tsx          # App entry
+  │   ├── App.tsx           # Root component
+  │   ├── pages/
+  │   │   └── Landing.tsx   # Landing page
+  │   ├── components/
+  │   │   └── ErrorBoundary.tsx
+  │   ├── utils/
+  │   │   └── logger.ts     # Frontend logging
+  │   └── styles/
+  ├── logs/                  # Frontend logs (if SSR)
+  ├── .env.example           # Environment template (committed)
+  ├── .env                   # Local environment (gitignored)
+  ├── package.json
+  └── Dockerfile
+  ```
+
+- **Required Pages**:
+  - Landing page with project branding
+
+- **Error Handling**:
+  - React Error Boundary
+  - Global error handler
+  - Toast notifications for user feedback
+
+- **Logging**:
+  - Console logging (dev)
+  - Log to file for SSR apps
+
+#### 2.3 Environment Configuration
+
+Create `.env` files at three levels:
+
+```
+.
+├── .env.example              # Root Docker environment template
+├── .env                      # Root Docker environment (gitignored)
+├── services/
+│   ├── backend/
+│   │   ├── .env.example      # Backend environment template
+│   │   └── .env              # Backend environment (gitignored)
+│   └── frontend/
+│       ├── .env.example      # Frontend environment template
+│       └── .env              # Frontend environment (gitignored)
+```
+
+**Root `.env.example`** (for Docker):
+```env
+# Docker Compose Environment
+COMPOSE_PROJECT_NAME=appname
+
+# Database
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=changeme
+POSTGRES_DB=appname
+
+# Service URLs (for inter-container communication)
+BACKEND_URL=http://backend:8000
+FRONTEND_URL=http://frontend:3000
+```
+
+**Docker injects environment variables** into services via `compose.yml`:
+```yaml
+services:
+  backend:
+    env_file:
+      - .env
+      - ./services/backend/.env
+  frontend:
+    env_file:
+      - .env
+      - ./services/frontend/.env
+```
+
+#### 2.4 Docker Setup
+
+- Create `compose.yml` and `compose.dev.yml`
+- Create service-level Dockerfiles
+- Docker reads root `.env` and injects into services
+- Verify both services start correctly
+
+#### 2.5 Commit Phase 2
+
+```bash
+git add .
+git commit -m "feat: Phase 2 - Base application with error handling and logging"
+```
+
+---
+
+### Phase 3: Core Features
+
+**Objective**: Implement project-specific features.
+
+✅ **Multiple agents can work in parallel** - assign different features to different agents.
+
+#### 3.1 Authentication (if required)
+
+- User registration/login
+- JWT token management
+- Password hashing (bcrypt)
+- Session management
+
+#### 3.2 Two-Factor Authentication (if required)
+
+- TOTP setup
+- Backup codes
+- Device trust
+
+#### 3.3 Additional Features
+
+Implement features as defined in `Implementation/TODO.md`:
+
+- Each feature should be a separate task
+- Write tests for each feature
+- Update README.md as needed
+- Commit after completing each major feature
+
+---
+
+## Phase Completion Protocol
+
+### ⛔ COMMIT GATE (MANDATORY)
+
+**You MUST NOT start the next phase until the current phase is committed.**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  ⛔ STOP: PHASE TRANSITION CHECKPOINT                        │
+│                                                              │
+│  Before proceeding to Phase [N+1], verify:                   │
+│                                                              │
+│  □ All Phase [N] tasks marked [x] in TODO.md                 │
+│  □ CHANGELOG.md updated                                      │
+│  □ Tests pass (if applicable)                                │
+│  □ User has confirmed commit                                 │
+│  □ Git commit completed                                      │
+│                                                              │
+│  DO NOT PROCEED until all boxes are checked.                 │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Phase Completion Steps
+
+1. **VERIFY** all phase tasks are marked `[x]` in `Implementation/TODO.md`
+2. **REMOVE** your session from `Implementation/CURRENT_TASK.md`
+3. **UPDATE** `CHANGELOG.md` in the `[Unreleased]` section
+4. **RUN** tests and verify they pass
+5. **PROMPT** user for commit confirmation:
+
+   ```
+   📋 Phase [N] Complete - Commit Required
+
+   All tasks completed:
+   - [x] Task 1
+   - [x] Task 2
+   ...
+
+   Suggested commit message:
+   "feat: complete Phase [N] - [phase description]"
+
+   ⛔ WAITING FOR COMMIT CONFIRMATION
+
+   Please confirm to commit (yes/no):
+   ```
+
+6. **WAIT** for user response - DO NOT proceed
+7. **COMMIT** only after user confirms
+8. **THEN** proceed to next phase
+
+---
 
 ## Workflow Commands
 
-### `continue` or `proceed`
-When user types this command:
-1. Read `.ai/TODO.md` to get current task list
-2. Read `Implementation/CURRENT_TASK.md` for active task context
-3. Read latest file in `.ai/memory/` for session continuity
-4. Continue from where last session ended
-5. Update memory file before ending session
+| Command | Action |
+|---------|--------|
+| `continue` | Continue from last session (Case D) |
+| `proceed` | Same as continue |
+| `status` | Show current project status including active agents |
+
+---
 
 ## File Permissions
 
 | Path | Permission | Description |
 |------|------------|-------------|
-| `.ai/*.md` (except TODO.md, memory/) | read-only | Project configuration |
-| `.ai/TODO.md` | editable | Agent task tracking |
-| `.ai/memory/*.md` | editable | Session memory |
-| `Implementation/CURRENT_TASK.md` | editable | Current task details |
-| `Implementation/TODO.md` | tick & append | Mark completed items |
-| `Reference/*` | read-only | Reference materials |
-| `docs/*` | read-only | Documentation |
-| `docs/API/*.rest` | editable | API definitions |
-
-## Memory Management
-- Create new memory file for each session: `.ai/memory/YYYYMMDD_HHMMSS.md`
-- Keep entries concise to minimize token usage
-- Reference previous memory files when resuming
-
-## Task Completion Protocol
-1. Mark task complete in `Implementation/TODO.md` with `[x]`
-2. Update `.ai/TODO.md` with progress
-3. Write session summary to memory
-4. Update `CURRENT_TASK.md` with next steps
-
-## Error Handling
-- Document blockers in `CURRENT_TASK.md`
-- Note workarounds attempted
-- Flag for human review if stuck
+| `.ai/AI_INSTRUCTIONS.md` | read-only | Workflow rules (this file) |
+| `.ai/CODING_GUIDELINES.md` | read-only | Code style guidelines |
+| `.ai/TESTING_GUIDELINES.md` | read-only | Testing standards |
+| `.ai/OPERATIONAL_GUIDELINES.md` | read-only | DevOps procedures |
+| `.ai/memory/*.md` | session file | Create new per session (with agent name) |
+| `Implementation/TODO.md` | editable | Task list with agent claims |
+| `Implementation/CURRENT_TASK.md` | editable | Active sessions registry |
+| `Implementation/PROJECT_CONTEXT.md` | Phase 1 only | Read-only after planning |
+| `Implementation/ARCHITECTURE.md` | Phase 1 only | Read-only after planning |
+| `Implementation/DECISIONS.md` | Phase 1 only | Read-only after planning |
+| `Implementation/PROJECT_MANAGEMENT.md` | Phase 1 only | Read-only after planning |
+| `README.md` | editable | Update on feature completion |
+| `CHANGELOG.md` | editable | Update on phase completion |
+| `services/**` | editable | Application code (check claims first!) |
+| `logs/**` | auto-generated | Log files |
 
 ---
-*These instructions are read-only. Contact project maintainer for changes.*
+
+## Error Handling Requirements
+
+### Backend
+
+```python
+# Response format for all errors
+{
+    "success": false,
+    "error": {
+        "code": "ERROR_CODE",
+        "message": "Human readable message",
+        "details": {}  # Optional additional info
+    }
+}
+```
+
+### Frontend
+
+- Error Boundary for component errors
+- Toast notifications for API errors
+- Console logging for development
+
+---
+
+## Logging Requirements
+
+### Backend (`./logs/`)
+
+```python
+# Rotating logs
+# Format: YYYY-MM-DD_HH-MM-SS.log
+# Rotation: Daily or 10MB
+# Retention: 30 days
+
+# Log format
+"%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+```
+
+### Frontend
+
+- Development: `console.log/warn/error`
+- Production: Error tracking service (optional)
+
+---
+
+## Memory Management
+
+### Memory File Rules
+
+1. **CREATE** new file each session: `.ai/memory/YYYYMMDD_HHMMSS_{agent}.md`
+2. **UPDATE** after completing tasks
+3. **UPDATE** before context exhaustion
+4. Previous sessions are READ-ONLY
+5. Include agent name in filename for multi-agent support
+
+### Memory File Structure
+
+```markdown
+# Session: YYYY-MM-DD HH:MM:SS
+Agent: {agent_name}
+
+## Status
+- Phase: [current phase]
+- Task Claimed: [task with @tag]
+- Last Completed: [task]
+- Current: [task]
+- Next: [task]
+
+## Active Session Info
+- Session ID: YYYYMMDD-HHMMSS
+- Files Being Modified:
+  - services/backend/app/main.py
+  - services/backend/app/core/logging.py
+
+## Completed This Session
+- [x] Task 1 - notes
+- [x] Task 2 - notes
+
+## In Progress
+- [ ] Current task - state, blockers
+
+## Key Decisions
+- Decision: rationale
+
+## Next Steps
+- Step 1
+- Step 2
+
+## Handoff Notes
+<!-- Notes for next session or other agents -->
+```
+
+---
+
+## Context Files to Read
+
+When continuing a session, read these files in order:
+
+1. `Implementation/CURRENT_TASK.md` - Check active sessions first
+2. `Implementation/TODO.md` - Task state and claims
+3. `Implementation/PROJECT_CONTEXT.md` - Project overview
+4. Your latest `.ai/memory/*_{agent}.md` - Your previous session context
+
+---
+
+## Package Manager Commands
+
+### Frontend (pnpm)
+
+```bash
+pnpm install           # Install dependencies
+pnpm add <package>     # Add package
+pnpm add -D <package>  # Add dev dependency
+pnpm dev               # Start dev server
+pnpm build             # Build for production
+pnpm test              # Run tests
+```
+
+### Backend (uv)
+
+```bash
+uv sync                # Sync dependencies
+uv add <package>       # Add package
+uv add --dev <package> # Add dev dependency
+uv run uvicorn app.main:app --reload  # Start dev server
+uv run pytest          # Run tests
+```
+
+---
+
+## Docker Commands
+
+```bash
+# Development
+docker compose -f compose.yml -f compose.dev.yml up -d
+
+# Production
+docker compose up -d
+
+# Rebuild
+docker compose up -d --build
+
+# Logs
+docker compose logs -f
+
+# Stop
+docker compose down
+```
+
+---
+
+_These instructions are read-only. All AI agents must follow this workflow._

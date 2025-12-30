@@ -1,8 +1,0 @@
-### Example API Request
-# Add your API definitions here
-
-# GET /api/example
-GET http://localhost:3000/api/example
-Content-Type: application/json
-
-###
