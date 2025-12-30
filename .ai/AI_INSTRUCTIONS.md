@@ -413,6 +413,7 @@ Create `services/backend/` with:
   - Consistent error response format
 
 - **Logging**:
+
   - Rotating file logs in `./logs/`
   - Format: `YYYY-MM-DD_HH-MM-SS.log`
   - Log levels: DEBUG (dev), INFO (prod)
@@ -501,6 +502,7 @@ Create `services/frontend/` with:
   - Landing page with project branding
 
 - **Favicon**:
+
   - Update `favicon.ico` in `public/` folder with project-specific icon
   - Update page title in `index.html` to match project name
 
@@ -520,8 +522,66 @@ Create `services/frontend/` with:
   - Set `true` to `server.allowedHosts` in `vite.config.js` for local network IP access
 
 - **PM2 Configuration**:
+
   - Create `ecosystem.config.js` for pm2 deployment
   - Configure for production builds
+
+- **PWA Configuration** (MANDATORY):
+
+  Setup Progressive Web App with offline support:
+
+  ```
+  public/
+  ├── manifest.json          # PWA manifest
+  ├── sw.js                  # Service worker (or use vite-plugin-pwa)
+  └── icons/
+      ├── icon-192x192.png
+      └── icon-512x512.png
+  ```
+
+  **Required Offline Pages:**
+
+  - Home page (cached for offline access)
+  - "You are offline" fallback page
+
+  **manifest.json:**
+
+  ```json
+  {
+    "name": "Project Name",
+    "short_name": "Project",
+    "description": "Project description",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "icons": [
+      {
+        "src": "/icons/icon-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/icons/icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
+  ```
+
+  **Service Worker Strategy:**
+
+  - Use `vite-plugin-pwa` for automatic SW generation
+  - Cache static assets (JS, CSS, images)
+  - Cache API responses where appropriate
+  - Show offline page when network unavailable
+
+  **Offline Page Requirements:**
+
+  - Create `/offline` route with friendly "You are offline" message
+  - Include retry button to check connection
+  - Match app's design system
 
 #### 2.3 Environment Configuration
 
@@ -612,10 +672,12 @@ git commit -m "feat: Phase 2 - Base application with error handling and logging"
 **⚠️ MANDATORY Authentication Rules:**
 
 1. **Superadmin Creation Command**:
+
    - Add CLI command to create superadmin user (e.g., `python manage.py createsuperadmin`)
    - Document command usage in `./docs/ProductionDeployment.md`
 
 2. **RBAC Seed Data**:
+
    - Default permissions must be seeded during database migration
    - Default roles must be seeded during database migration
    - Create seed/migration script for initial RBAC setup
