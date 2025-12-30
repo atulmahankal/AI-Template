@@ -1,0 +1,135 @@
+# Pre-commit hooks configuration
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+default_language_version:
+  python: python3.12
+  node: 20.10.0
+
+repos:
+  # ===========================================
+  # General Hooks
+  # ===========================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: ['--branch', 'main', '--branch', 'master']
+
+  # ===========================================
+  # Secret Detection
+  # ===========================================
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package-lock\.json|pnpm-lock\.yaml
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+
+  # ===========================================
+  # Python Hooks (Backend)
+  # ===========================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.3
+    hooks:
+      # Linter
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+        files: ^services/backend/
+      # Formatter
+      - id: ruff-format
+        types_or: [python, pyi]
+        files: ^services/backend/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        files: ^services/backend/
+        args: [--config-file=services/backend/pyproject.toml]
+        additional_dependencies:
+          - pydantic>=2.0
+          - fastapi>=0.100
+          - sqlalchemy>=2.0
+
+  # ===========================================
+  # JavaScript/TypeScript Hooks (Frontend)
+  # ===========================================
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint
+        entry: bash -c 'cd services/frontend && pnpm lint --fix'
+        language: system
+        files: \.(js|jsx|ts|tsx)$
+        pass_filenames: false
+
+      - id: prettier
+        name: Prettier
+        entry: bash -c 'cd services/frontend && pnpm format'
+        language: system
+        files: \.(js|jsx|ts|tsx|json|css|scss|md)$
+        pass_filenames: false
+
+      - id: typecheck
+        name: TypeScript Check
+        entry: bash -c 'cd services/frontend && pnpm typecheck'
+        language: system
+        files: \.(ts|tsx)$
+        pass_filenames: false
+
+  # ===========================================
+  # Docker Hooks
+  # ===========================================
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.13.0-beta
+    hooks:
+      - id: hadolint-docker
+        args: ['--ignore', 'DL3008', '--ignore', 'DL3013']
+
+  # ===========================================
+  # Markdown Hooks
+  # ===========================================
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.43.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix', '--disable', 'MD013', 'MD033', 'MD041']
+
+  # ===========================================
+  # YAML Hooks
+  # ===========================================
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: ['-d', '{extends: relaxed, rules: {line-length: {max: 120}}}']
+
+# CI configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [eslint, prettier, typecheck, mypy]  # Skip hooks that need dependencies
+  submodules: false
